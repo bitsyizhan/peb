@@ -66,28 +66,28 @@ int main(int argc, char *argv[])
 	PPEB_LDR_DATA pPebLdrData = NULL;
 	PPEB pPeb = NULL;
 
-	//¹ÊÒâ¼ÓÔØÒ»Ð©DLL£¬ÒÔ±ã²âÊÔ!  
+	//æ•…æ„åŠ è½½ä¸€äº›DLLï¼Œä»¥ä¾¿æµ‹è¯•!  
 	//LoadLibrary("ResLibDemo");
 	__asm
 	{
-		//1¡¢Í¨¹ýfs:[30h]»ñÈ¡µ±Ç°½ø³ÌµÄ_PEB½á¹¹  
+		//1ã€é€šè¿‡fs:[30h]èŽ·å–å½“å‰è¿›ç¨‹çš„_PEBç»“æž„  
 		mov eax, dword ptr fs : [30h];
 		mov pPeb, eax
 	}
 
-	//2¡¢Í¨¹ý_PEBµÄLdr³ÉÔ±»ñÈ¡_PEB_LDR_DATA½á¹¹  
+	//2ã€é€šè¿‡_PEBçš„Ldræˆå‘˜èŽ·å–_PEB_LDR_DATAç»“æž„  
 	pPebLdrData = pPeb->Ldr;
 
 	printf("\nInMemoryOrderModuleList\n");
-	//3¡¢Í¨¹ý_PEB_LDR_DATAµÄInMemoryOrderModuleList³ÉÔ±»ñÈ¡_LIST_ENTRY½á¹¹  
+	//3ã€é€šè¿‡_PEB_LDR_DATAçš„InMemoryOrderModuleListæˆå‘˜èŽ·å–_LIST_ENTRYç»“æž„  
 	pListEntryStart = pListEntryEnd = pPebLdrData->InMemoryOrderModuleList.Flink;
-	//²éÕÒËùÓÐÒÑÔØÈëµ½ÄÚ´æÖÐµÄÄ£¿é  
+	//æŸ¥æ‰¾æ‰€æœ‰å·²è½½å…¥åˆ°å†…å­˜ä¸­çš„æ¨¡å—  
 	do
 	{
-		//4¡¢Í¨¹ý_LIST_ENTRYµÄFlink³ÉÔ±»ñÈ¡_LDR_DATA_TABLE_ENTRY½á¹¹  
+		//4ã€é€šè¿‡_LIST_ENTRYçš„Flinkæˆå‘˜èŽ·å–_LDR_DATA_TABLE_ENTRYç»“æž„  
 		pLdrDataEntry = (PLDR_DATA_TABLE_ENTRY)CONTAINING_RECORD(pListEntryStart, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
 
-		//5¡¢Êä³ö_LDR_DATA_TABLE_ENTRYµÄBaseDllName»òFullDllName³ÉÔ±ÐÅÏ¢  
+		//5ã€è¾“å‡º_LDR_DATA_TABLE_ENTRYçš„BaseDllNameæˆ–FullDllNameæˆå‘˜ä¿¡æ¯  
 		printf("%S\n", pLdrDataEntry->BaseDllName.Buffer);
 
 		pListEntryStart = pListEntryStart->Flink;
@@ -96,13 +96,13 @@ int main(int argc, char *argv[])
 
 	printf("\nInLoadOrderModuleList\n");
 	pListEntryStart = pListEntryEnd = pPebLdrData->InLoadOrderModuleList.Flink;
-	//²éÕÒËùÓÐÒÑÔØÈëµ½ÄÚ´æÖÐµÄÄ£¿é  
+	//æŸ¥æ‰¾æ‰€æœ‰å·²è½½å…¥åˆ°å†…å­˜ä¸­çš„æ¨¡å—  
 	do
 	{
-		//4¡¢Í¨¹ý_LIST_ENTRYµÄFlink³ÉÔ±»ñÈ¡_LDR_DATA_TABLE_ENTRY½á¹¹  
-		pLdrDataEntry = (PLDR_DATA_TABLE_ENTRY)CONTAINING_RECORD(pListEntryStart, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
+		//4ã€é€šè¿‡_LIST_ENTRYçš„Flinkæˆå‘˜èŽ·å–_LDR_DATA_TABLE_ENTRYç»“æž„  
+		pLdrDataEntry = (PLDR_DATA_TABLE_ENTRY)CONTAINING_RECORD(pListEntryStart, LDR_DATA_TABLE_ENTRY, InLoadOrderLinks);
 
-		//5¡¢Êä³ö_LDR_DATA_TABLE_ENTRYµÄBaseDllName»òFullDllName³ÉÔ±ÐÅÏ¢  
+		//5ã€è¾“å‡º_LDR_DATA_TABLE_ENTRYçš„BaseDllNameæˆ–FullDllNameæˆå‘˜ä¿¡æ¯  
 		printf("%S\n", pLdrDataEntry->BaseDllName.Buffer);
 
 		pListEntryStart = pListEntryStart->Flink;
@@ -111,14 +111,14 @@ int main(int argc, char *argv[])
 
 	printf("\nInInitializationOrderModuleList\n");
 	pListEntryStart = pListEntryEnd = pPebLdrData->InInitializationOrderModuleList.Flink;
-	//²éÕÒËùÓÐÒÑÔØÈëµ½ÄÚ´æÖÐµÄÄ£¿é  
+	//æŸ¥æ‰¾æ‰€æœ‰å·²è½½å…¥åˆ°å†…å­˜ä¸­çš„æ¨¡å—  
 	do
 	{
-		//4¡¢Í¨¹ý_LIST_ENTRYµÄFlink³ÉÔ±»ñÈ¡_LDR_DATA_TABLE_ENTRY½á¹¹  
-		pLdrDataEntry = (PLDR_DATA_TABLE_ENTRY)CONTAINING_RECORD(pListEntryStart, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
+		//4ã€é€šè¿‡_LIST_ENTRYçš„Flinkæˆå‘˜èŽ·å–_LDR_DATA_TABLE_ENTRYç»“æž„  
+		pLdrDataEntry = (PLDR_DATA_TABLE_ENTRY)CONTAINING_RECORD(pListEntryStart, LDR_DATA_TABLE_ENTRY, InInitializationOrderLinks);
 
-		//5¡¢Êä³ö_LDR_DATA_TABLE_ENTRYµÄBaseDllName»òFullDllName³ÉÔ±ÐÅÏ¢  
-		printf("%S\n", pLdrDataEntry->FullDllName.Buffer);
+		//5ã€è¾“å‡º_LDR_DATA_TABLE_ENTRYçš„BaseDllNameæˆ–FullDllNameæˆå‘˜ä¿¡æ¯  
+		printf("%S\n", pLdrDataEntry->BaseDllName.Buffer);
 
 		pListEntryStart = pListEntryStart->Flink;
 
@@ -135,10 +135,11 @@ KERNELBASE.dll
 (null)
 
 InLoadOrderModuleList
-C : \Users\surfacebook\Documents\Visual Studio 2015\Projects\peb\Debug\peb.exe
-C : \WINDOWS\SYSTEM32\ntdll.dll
-C : \WINDOWS\System32\KERNEL32.DLL
-C : \WINDOWS\System32\KERNELBASE.dll
+peb.exe
+ntdll.dll
+KERNEL32.DLL
+KERNELBASE.dll
+(null)
 
 InInitializationOrderModuleList
 ntdll.dll
