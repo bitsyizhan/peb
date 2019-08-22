@@ -3,8 +3,8 @@
 
 #include "stdafx.h"
 
-//peb.c  
-//compile:cl peb.c  
+//peb.cpp  
+//compile:cl peb.cpp  
 #include <windows.h>  
 
 #define CONTAINING_RECORD(address, type, field) ((type *)((PCHAR)(address)-(ULONG_PTR)(&((type *)0)->field)))
@@ -19,6 +19,7 @@ typedef struct _PEB_LDR_DATA
 {
 	DWORD Length;
 	UCHAR Initialized;
+	UINT8 _PADDING0_[0x3];
 	PVOID SsHandle;
 	LIST_ENTRY InLoadOrderModuleList;
 	LIST_ENTRY InMemoryOrderModuleList;
@@ -59,6 +60,7 @@ typedef struct _PEB
 	PPEB_LDR_DATA Ldr;
 }PEB, *PPEB;
 
+/*
 int main(int argc, char *argv[])
 {
 	PLDR_DATA_TABLE_ENTRY pLdrDataEntry = NULL;
@@ -66,11 +68,9 @@ int main(int argc, char *argv[])
 	PPEB_LDR_DATA pPebLdrData = NULL;
 	PPEB pPeb = NULL;
 
-	//故意加载一些DLL，以便测试!  
-	//LoadLibrary("ResLibDemo");
+	//1、获取PEB
 	__asm
-	{
-		//1、通过fs:[30h]获取当前进程的_PEB结构  
+	{		
 		mov eax, dword ptr fs : [30h];
 		mov pPeb, eax
 	}
@@ -126,6 +126,59 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+*/
+
+
+int main(int argc, char* argv[])
+{
+	PVOID Peb = 0;
+
+	//1、获取PEB
+	__asm
+	{		
+		mov eax, dword ptr fs : [30h];
+		mov Peb, eax
+	}
+	
+	printf("Peb 0x%p\n", Peb);
+
+	void *pebAddr = *((void **)((BYTE*)NtCurrentTeb() + 0x30));  // TEB->ProcessEnvironmentBlock也就是PEB
+	void *ldrAddr = *((void **)((BYTE*)pebAddr + 0x0c)); // PEB->Ldr
+	void *inLoadOrderLinks = *((void **)((BYTE*)ldrAddr + 0x0c)); // PEB->Ldr->InLoadOrderLinks->FLink 
+	void *fLink = inLoadOrderLinks; // PEB->Ldr->InLoadOrderLinks->FLink  
+	void *p = fLink;
+	void *dllBase = NULL;
+	void *baseDllName = NULL;
+	void *fullDllName = NULL;
+	void *entryPoint = NULL;
+	void *sizeOfImage = NULL;
+
+	printf("PEB = 0x%p\n", Peb);
+	printf("PEB ADDRESS = 0x%p\n", pebAddr);
+	printf("LDR ADDRESS = 0x%p\n", ldrAddr);
+
+	do
+	{
+		dllBase = *((void **)((BYTE*)p + 0x18));
+		baseDllName = *((void **)((BYTE*)p + 0x2c + 0x4));
+		fullDllName = *((void **)((BYTE*)p + 0x24 + 0x4));
+		entryPoint = *((void **)((BYTE*)p + 0x1c));
+		sizeOfImage = *((void **)((BYTE*)p + 0x20));
+
+		printf("ModuleName:%S\n", (wchar_t*)baseDllName);
+		printf("Base Address:0x%p\n", dllBase);
+		printf("Full Module Name:%S\n", (wchar_t*)fullDllName);
+		printf("entryPoint:0x%p\n", entryPoint);
+		printf("imageOfSize:0x%p\n", sizeOfImage);
+
+		p = *(void **)p;  // p->InLoadOrderLinks->FLink
+
+	} while (p != fLink);
+
+
+	return 0;
+}
+
 /*
 InMemoryOrderModuleList
 peb.exe
@@ -147,4 +200,36 @@ KERNELBASE.dll
 KERNEL32.DLL
 (null)
 */
+
+/*
+Peb 0x00CC1000
+PEB = 0x00CC1000
+PEB ADDRESS = 0x00CC1000
+LDR ADDRESS = 0x775A7BA0
+ModuleName:peb.exe
+Base Address:0x00A30000
+Full Module Name:C:\Users\surfacebook\Documents\Visual Studio 2015\Projects\peb\Debug\peb.exe
+entryPoint:0x00A786D1
+imageOfSize:0x0010D000
+ModuleName:ntdll.dll
+Base Address:0x77490000
+Full Module Name:C:\WINDOWS\SYSTEM32\ntdll.dll
+entryPoint:0x00000000
+imageOfSize:0x00190000
+ModuleName:KERNEL32.DLL
+Base Address:0x755B0000
+Full Module Name:C:\WINDOWS\System32\KERNEL32.DLL
+entryPoint:0x755C06A0
+imageOfSize:0x000E0000
+ModuleName:KERNELBASE.dll
+Base Address:0x74530000
+Full Module Name:C:\WINDOWS\System32\KERNELBASE.dll
+entryPoint:0x7461F3F0
+imageOfSize:0x001E4000
+ModuleName:(null)
+Base Address:0x00000000
+Full Module Name:entryPoint:0x00000000
+imageOfSize:0x00000000
+*/
+
 
